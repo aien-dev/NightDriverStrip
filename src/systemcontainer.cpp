@@ -28,6 +28,7 @@
 //---------------------------------------------------------------------------
 
 #include "globals.h"
+#include "heapbudget.h"
 #include "audioserialbridge.h"
 #include "audioservice.h"
 #include "colorstreamerservice.h"
@@ -214,7 +215,9 @@ SystemContainer::BufferManagerContainer& SystemContainer::SetupBufferManagers()
     #if USE_PSRAM
         const uint32_t freeMemory = ESP.getFreePsram();
     #else
-        const uint32_t freeMemory = ESP.getFreeHeap();
+        // Budget from the memory the buffers are really allocated from (8-bit internal),
+        // not ESP.getFreeHeap(), which also counts memory that 8-bit allocations cannot use.
+        const uint32_t freeMemory = FreeInternalBytes8Bit();
     #endif
 
     // Saturate at zero when the requested reserve exceeds available memory.
